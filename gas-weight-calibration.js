@@ -157,10 +157,20 @@ class GasWeightCalibrationCustomComponent extends LitElement {
         var result_kg = Math.abs(z.toFixed(2));
         var result_percent = Math.floor(Math.abs((z / parseFloat(kgFull.state)) * 100));
 
+        var entity_id_calibrate = `${stateObj.entity_id}_calibrate`;
         var entity_id_percentage = `${stateObj.entity_id}_percentage`;
         var entity_id_kg = `${stateObj.entity_id}_kg`;
+        var friendly_name_calibrate = "Weight Calibrate Value";
         var friendly_name = "Weight Percentage";
         var friendly_name_kg = "Weight KiloGrams";
+
+        this._doNetworkRequest(`/api/states/${entity_id_calibrate}`, {
+            state: e,
+            attributes: {
+                unit_of_measurement: '',
+                friendly_name: friendly_name_calibrate,
+            }
+        });
 
 
         this._doNetworkRequest(`/api/states/${entity_id_percentage}`, {
