@@ -28,38 +28,45 @@ class GasWeightCalibrationCustomComponent extends LitElement {
         return html`
 
             <ha-card>
-                <div class="header" style="padding: 16px 16px 0px; display: flex; justify-content: space-between; align-items: center; align-content: center;">
-                    <h4 style="color: grey; font-weight: 600; font-size: 16px; white-space: nowrap; margin: 0;">Gas-Weight Calibration</h4>
-                    <div class="icon">
-                        <ha-state-icon data-state="0.0"></ha-state-icon>
+                <div class="header">
+                    <p style="color: grey; font-weight: 600; font-size: 16px; white-space: nowrap; margin: 0;">Gas-Weight Calibration</p>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; align-content: center; padding: 4px 16px">
+                    <div style="width: 70%">
+                        <p><b>Calibrate Raw Empty:</b> Weight the empty gas bottle then press the button.</p>
                     </div>
+                    <button class="btn" @click="${() => this._setRawEmpty(stateObj)}">Calibrate</button>
                 </div>
-                <div style="display: flex; justify-content: space-around; align-items: center; align-content: center; padding: 16px">
-                    <p><b>Calibrate Raw Empty:</b> Weight the empty gas bottle then press the button.</p>
-                    <button @click="${() => this._setRawEmpty(stateObj)}" style="background-color: dodgerblue; border: none; border-radius: 32px; padding: 8px 16px; color: white">Calibrate Raw Empty</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; align-content: center; padding: 4px 16px">
+                    <div style="width: 70%">
+                        <p><b>Calibrate Raw Full:</b> Weight the full gas bottle then press the button.</p>
+                    </div>
+                    <button class="btn" @click="${() => this._setRawFull(stateObj)}">Calibrate</button>
                 </div>
-                <div style="display: flex; justify-content: space-around; align-items: center; align-content: center; padding: 16px">
-                    <p><b>Calibrate Raw Full:</b> Weight the full gas bottle then press the button.</p>
-                    <button @click="${() => this._setRawFull(stateObj)}" style="background-color: dodgerblue; border: none; border-radius: 32px; padding: 8px 16px; color: white">Calibrate Raw Full</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; align-content: center; padding: 4px 16px">
+                    <div style="width: 70%">
+                        <p><b>Calibrate KG Empty:</b> Weight the empty gas bottle then type in the empty weight.</p>
+                    </div>
+                    <input class="input-weight" value="${this.hass.states[`${stateObj.entity_id}_kg_empty`] ? this.hass.states[`${stateObj.entity_id}_kg_empty`].state : null}" placeholder="KG Empty" type="number" @input="${event => this._setKgEmpty(stateObj, event)}"></input>
                 </div>
-                <div style="display: flex; justify-content: space-around; align-items: center; align-content: center; padding: 16px">
-                    <p><b>Calibrate KG Empty:</b> Weight the empty gas bottle then press the button.</p>
-                    <input value="${this.hass.states[`${stateObj.entity_id}_kg_empty`] ? this.hass.states[`${stateObj.entity_id}_kg_empty`].state : null}" placeholder="KG Empty" type="number" @input="${event => this._setKgEmpty(stateObj, event)}"></input>
-                </div>
-                <div style="display: flex; justify-content: space-around; align-items: center; align-content: center; padding: 16px">
-                    <p><b>Calibrate KG Full:</b> Weight the full gas bottle then press the button.</p>
-                    <input value="${this.hass.states[`${stateObj.entity_id}_kg_full`] ? this.hass.states[`${stateObj.entity_id}_kg_full`].state : null}" placeholder="KG Full" type="number" @input="${event => this._setKgFull(stateObj, event)}"></input>
+                <div style="display: flex; justify-content: space-between; align-items: center; align-content: center; padding: 4px 16px">
+                    <div style="width: 70%">
+                        <p><b>Calibrate KG Full:</b> Weight the full gas bottle then then type in the empty weight.</p>
+                    </div>
+                    <input class="input-weight" value="${this.hass.states[`${stateObj.entity_id}_kg_full`] ? this.hass.states[`${stateObj.entity_id}_kg_full`].state : null}" placeholder="KG Full" type="number" @input="${event => this._setKgFull(stateObj, event)}"></input>
                 </div>
 
-                <hr style="border-color: grey;">
+                <hr style="border-top: 1px solid #eee; margin: 0 16px 8px">
 
-                <div class="row">
-                    <p><b>Raw: ${stateObj.state}</b></p>
-                    <button @click="${() => this._calibrate(stateObj)}">Submit</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; align-content: center; padding: 4px 16px 8px">
+                    <p><b>Current Raw: <span style="color: dodgerblue">${stateObj.state}</span></b></p>
+                    <button class="btn" @click="${() => this._calibrate(stateObj)}">Submit</button>
                 </div>
             </ha-card>
     `;
     }
+
 
     _setKgEmpty = (kgEmpty, event) => {
         // console.log('kgEmpty', kgEmpty);
@@ -68,6 +75,7 @@ class GasWeightCalibrationCustomComponent extends LitElement {
         var value = event.target.value;
         this._updateEntity(entity_id, value, friendly_name);
     }
+
 
     _setKgFull = (kgFull, event) => {
         // console.log('kgFull', kgFull);
@@ -120,6 +128,19 @@ class GasWeightCalibrationCustomComponent extends LitElement {
         this._updateEntity(entity_id, value, friendly_name);
     }
 
+    _doNetworkRequest = (url, json) => {
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIzMTU3YjBjNzA0NjE0OTI3YWU4MTBhMGViZTQ1YzU0MyIsImlhdCI6MTY0MjA2MDcyNCwiZXhwIjoxOTU3NDIwNzI0fQ.z1yAMtFvZTZIAJ0CLxgW3z2obj5BV98Yh2OAiFsO_YE',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(json)
+        }).then(response => {
+            // console.log(response);
+        });
+    }
+
     _calibrate = (stateObj) => {
 
         var kgEmpty = this.hass.states[`${stateObj.entity_id}_kg_empty`];
@@ -133,27 +154,47 @@ class GasWeightCalibrationCustomComponent extends LitElement {
         e = e / parseFloat(kgFull.state);
 
         var z = top_e / e;
-        var out = Math.floor(Math.abs((z / parseFloat(kgFull.state)) * 100));
+        var result_kg = Math.abs(z.toFixed(2));
+        var result_percent = Math.floor(Math.abs((z / parseFloat(kgFull.state)) * 100));
 
-        var entity_id = `${stateObj.entity_id}_percentage`;
+        var entity_id_percentage = `${stateObj.entity_id}_percentage`;
+        var entity_id_kg = `${stateObj.entity_id}_kg`;
         var friendly_name = "Weight Percentage";
+        var friendly_name_kg = "Weight KiloGrams";
 
-        fetch(`/api/states/${entity_id}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIzMTU3YjBjNzA0NjE0OTI3YWU4MTBhMGViZTQ1YzU0MyIsImlhdCI6MTY0MjA2MDcyNCwiZXhwIjoxOTU3NDIwNzI0fQ.z1yAMtFvZTZIAJ0CLxgW3z2obj5BV98Yh2OAiFsO_YE', // this is a temporary api key, use your own
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                state: out,
-                attributes: {
-                    unit_of_measurement: '%',
-                    friendly_name: friendly_name,
-                }
-            })
-        }).then(response => {
-            // console.log(response);
+
+        this._doNetworkRequest(`/api/states/${entity_id_percentage}`, {
+            state: result_percent,
+            attributes: {
+                unit_of_measurement: '%',
+                friendly_name: friendly_name,
+            }
         });
+
+        this._doNetworkRequest(`/api/states/${entity_id_kg}`, {
+            state: result_kg,
+            attributes: {
+                unit_of_measurement: 'kg',
+                friendly_name: friendly_name_kg,
+            }
+        });
+
+        // fetch(`/api/states/${entity_id_percentage}`, {
+        //     method: 'POST',
+        //     headers: {
+        //         'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIzMTU3YjBjNzA0NjE0OTI3YWU4MTBhMGViZTQ1YzU0MyIsImlhdCI6MTY0MjA2MDcyNCwiZXhwIjoxOTU3NDIwNzI0fQ.z1yAMtFvZTZIAJ0CLxgW3z2obj5BV98Yh2OAiFsO_YE',
+        //         'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify({
+        //         state: out,
+        //         attributes: {
+        //             unit_of_measurement: '%',
+        //             friendly_name: friendly_name,
+        //         }
+        //     })
+        // }).then(response => {
+        //     // console.log(response);
+        // });
     };
 
     setConfig(config) {
@@ -185,6 +226,15 @@ class GasWeightCalibrationCustomComponent extends LitElement {
         padding: 8px;
         align-items: center;
       }
+      .header {
+        padding: 16px 16px 0px;
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        align-content: center;
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+      }
       .row {
         display: flex;
         justify-content: space-between;
@@ -199,6 +249,57 @@ class GasWeightCalibrationCustomComponent extends LitElement {
       }
       wired-toggle {
         margin-left: 8px;
+      }
+      .input-weight {
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        height: 30px;
+        width: 88px;
+        height: 32px;
+        text-align: right;
+      }
+      .input-weight:focus {
+        border-radius: 4px;
+        border: 2px solid dodgerblue;
+        height: 30px;
+        width: 88px;
+        height: 32px;
+        text-align: center;
+      }
+      .btn {
+        background-color: dodgerblue;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        color: white;
+        box-shadow: 0 1px 2px lightgrey;
+        width: 88px;
+        height: 32px;
+      }
+      .btn:hover {
+        background-color: dodgerblue;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        color: white;
+        box-shadow: 0 1px 2px lightgrey;
+        width: 88px;
+        height: 32px;
+        cursor: pointer;
+      }
+      .btn:active {
+        background-color: dodgerblue;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        color: white;
+        box-shadow: 0 1px 2px lightgrey;
+        width: 88px;
+        height: 32px;
+        transform: translateY(2px);
+      }
+      * {
+      box-sizing: border-box;
       }
     `;
     }
